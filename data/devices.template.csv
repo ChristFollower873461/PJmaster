@@ -1,0 +1,5 @@
+device_label,purpose,where_recovery_lives,do_not_do
+primary_phone,<private>,private_vault,do_not_wipe_until_reviewed
+primary_laptop,<private>,private_vault,do_not_wipe_until_reviewed
+backup_drive,<private>,private_vault,do_not_discard_until_reviewed
+security_key,<private>,private_vault,do_not_separate_from_recovery_notes

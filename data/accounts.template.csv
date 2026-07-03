@@ -1,0 +1,8 @@
+category,account_label,why_it_matters,where_private_access_lives,shutdown_or_preserve
+email,<private>,recovery_and_communications,private_vault,preserve_first
+phone,<private>,identity_recovery,private_vault,preserve_first
+password_manager,<private>,account_access,private_vault,preserve_first
+cloud_storage,<private>,documents_and_photos,private_vault,preserve_first
+github,<private>,code_and_public_repos,private_vault,review_before_changes
+banking,<private>,financial_records,private_vault,professional_review
+insurance,<private>,claims_and_coverage,private_vault,professional_review

@@ -1,0 +1,7 @@
+category,asset_label,where_records_live,notes
+home_or_property,<private>,private_vault,<private>
+vehicle,<private>,private_vault,<private>
+bank_account,<private>,private_vault,<private>
+investment_account,<private>,private_vault,<private>
+business_interest,<private>,private_vault,<private>
+domain_name,<private>,private_vault,<private>

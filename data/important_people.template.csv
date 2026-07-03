@@ -1,0 +1,7 @@
+role,display_label,where_private_contact_lives,notes
+primary_family_coordinator,<private>,private_vault,<private>
+backup_family_coordinator,<private>,private_vault,<private>
+executor_or_legal_decision_maker,<private>,private_vault,<private>
+attorney,<private>,private_vault,<private>
+accountant,<private>,private_vault,<private>
+technical_helper,<private>,private_vault,<private>

@@ -1,0 +1,7 @@
+document_type,where_it_lives,who_can_access,last_checked
+will_or_trust,private_vault,<private>,<date>
+power_of_attorney,private_vault,<private>,<date>
+health_directive,private_vault,<private>,<date>
+insurance_policy,private_vault,<private>,<date>
+tax_records,private_vault,<private>,<date>
+business_records,private_vault,<private>,<date>

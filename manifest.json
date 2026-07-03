@@ -1,0 +1,9 @@
+{
+  "name": "PJmaster",
+  "purpose": "Public-safe family handoff repo and GitHub CD package",
+  "owner_label": "PJ",
+  "public_repo_url": "https://github.com/ChristFollower873461/PJmaster",
+  "privacy_model": "public index, private vault",
+  "created": "2026-07-03",
+  "safe_for_public_cd": true
+}
