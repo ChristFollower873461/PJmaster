@@ -21,8 +21,10 @@ make qa
 Expected result:
 
 - Unit tests pass.
-- Public safety scan reports no findings.
-- Disc zip, manifest, and printable CD label are generated.
+- Public safety scan reports no recognized private-data patterns, sensitive filenames,
+  symbolic links, or unapproved binary files.
+- Disc zip, manifest, and printable CD label are generated from Git-tracked regular
+  files only.
 
 ## Gaps
 

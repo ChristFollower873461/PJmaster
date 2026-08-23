@@ -25,6 +25,11 @@ make qa
 
 If the scanner flags something, treat it as a stop sign until reviewed.
 
+The scanner also stops on sensitive filenames, symbolic links, and binary files other
+than the generated CD label. Disc packaging is restricted to Git-tracked regular files,
+but an unsafe untracked file in the repository workspace still blocks the build so it
+cannot be overlooked during review.
+
 ## When In Doubt
 
 If the content answers "what private thing is it?" instead of "where should family look

@@ -17,8 +17,10 @@ every entry is safe to publish.
 
 ## Tools
 
-- `tools/scan_public_safety.py` checks for obvious secrets and private data patterns.
-- `tools/build_disc_package.py` builds a local zip and manifest.
+- `tools/scan_public_safety.py` checks for recognized secrets and private-data patterns,
+  sensitive filenames, symbolic links, and unapproved binary files.
+- `tools/build_disc_package.py` builds a local zip and manifest from Git-tracked regular
+  files after the safety scan passes.
 - `tools/create_cd_label.py` creates the printable CD label PDF.
 
 ## Tests

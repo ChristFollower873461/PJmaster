@@ -5,9 +5,15 @@ from __future__ import annotations
 
 import hashlib
 import os
+import subprocess
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+try:
+    from tools.scan_public_safety import scan
+except ModuleNotFoundError:  # Direct execution from tools/.
+    from scan_public_safety import scan
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,26 +21,29 @@ DIST = ROOT / "dist"
 ZIP_PATH = DIST / "PJmaster-disc.zip"
 MANIFEST_PATH = DIST / "PJmaster-disc-manifest.txt"
 
-SKIP_DIRS = {
-    ".git",
-    ".pytest_cache",
-    "__pycache__",
-    "dist",
-}
+def iter_files(root: Path = ROOT):
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached"],
+        cwd=root,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
+    for raw_path in result.stdout.split(b"\0"):
+        if not raw_path:
+            continue
 
-def should_include(path: Path) -> bool:
-    parts = set(path.relative_to(ROOT).parts)
-    return not parts.intersection(SKIP_DIRS)
+        relative = Path(os.fsdecode(raw_path))
+        if relative.is_absolute() or ".." in relative.parts:
+            raise RuntimeError(f"Unsafe tracked path: {relative}")
 
-
-def iter_files():
-    for current_root, dirs, files in os.walk(ROOT):
-        dirs[:] = [name for name in dirs if name not in SKIP_DIRS]
-        for filename in files:
-            path = Path(current_root) / filename
-            if should_include(path):
-                yield path
+        path = root / relative
+        if path.is_symlink():
+            raise RuntimeError(f"Refusing to package symbolic link: {relative}")
+        if not path.is_file():
+            raise RuntimeError(f"Tracked file is missing: {relative}")
+        yield path
 
 
 def sha256(path: Path) -> str:
@@ -46,8 +55,21 @@ def sha256(path: Path) -> str:
 
 
 def main() -> int:
+    findings = scan(ROOT)
+    if findings:
+        print("Refusing to build a public disc package while the safety scan has findings:")
+        for finding in findings:
+            relative = finding.path.relative_to(ROOT)
+            location = f"{relative}:{finding.line}" if finding.line else str(relative)
+            print(f"- {location} [{finding.kind}] {finding.snippet}")
+        return 1
+
     DIST.mkdir(exist_ok=True)
-    files = sorted(iter_files(), key=lambda item: item.relative_to(ROOT).as_posix())
+    try:
+        files = sorted(iter_files(), key=lambda item: item.relative_to(ROOT).as_posix())
+    except (RuntimeError, subprocess.CalledProcessError) as error:
+        print(f"Refusing to build the public disc package: {error}")
+        return 1
 
     with zipfile.ZipFile(ZIP_PATH, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in files:
