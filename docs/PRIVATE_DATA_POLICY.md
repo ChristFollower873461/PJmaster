@@ -25,11 +25,13 @@ make qa
 
 If the scanner flags something, treat it as a stop sign until reviewed.
 
-The scanner also stops on sensitive filenames, symbolic links, and binary files other
-than the generated CD label. Disc packaging is restricted to Git-tracked regular files
-outside scanner-skipped generated or dependency directories. A tracked path that would
-bypass scanner coverage stops the build, and an unsafe untracked workspace file also
-blocks the build so it cannot be overlooked during review.
+The scanner also stops on sensitive filenames, control-character paths, symbolic links,
+and binary files other than the generated CD label. Finding output contains only safely
+escaped path, line, and kind metadata, never the matched content. Disc packaging is
+restricted to Git-tracked regular files outside scanner-skipped generated or dependency
+directories. A tracked path that would bypass scanner coverage or contains control
+characters stops the build, and an unsafe untracked workspace file also blocks the build
+so it cannot be overlooked during review.
 
 ## When In Doubt
 

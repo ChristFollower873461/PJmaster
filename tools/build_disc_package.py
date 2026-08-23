@@ -11,9 +11,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from tools.scan_public_safety import SKIP_DIRS, scan
+    from tools.scan_public_safety import (
+        SKIP_DIRS,
+        format_finding,
+        has_control_characters,
+        scan,
+    )
 except ModuleNotFoundError:  # Direct execution from tools/.
-    from scan_public_safety import SKIP_DIRS, scan
+    from scan_public_safety import (
+        SKIP_DIRS,
+        format_finding,
+        has_control_characters,
+        scan,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,18 +45,23 @@ def iter_files(root: Path = ROOT):
             continue
 
         relative = Path(os.fsdecode(raw_path))
+        relative_name = relative.as_posix()
+        if has_control_characters(relative_name):
+            raise RuntimeError(
+                f"Refusing tracked path with control characters: {relative_name!r}"
+            )
         if relative.is_absolute() or ".." in relative.parts:
-            raise RuntimeError(f"Unsafe tracked path: {relative}")
+            raise RuntimeError(f"Unsafe tracked path: {relative_name!r}")
         if any(part in SKIP_DIRS for part in relative.parts[:-1]):
             raise RuntimeError(
-                f"Refusing tracked file in scanner-skipped directory: {relative}"
+                f"Refusing tracked file in scanner-skipped directory: {relative_name!r}"
             )
 
         path = root / relative
         if path.is_symlink():
-            raise RuntimeError(f"Refusing to package symbolic link: {relative}")
+            raise RuntimeError(f"Refusing to package symbolic link: {relative_name!r}")
         if not path.is_file():
-            raise RuntimeError(f"Tracked file is missing: {relative}")
+            raise RuntimeError(f"Tracked file is missing: {relative_name!r}")
         yield path
 
 
@@ -63,9 +78,7 @@ def main() -> int:
     if findings:
         print("Refusing to build a public disc package while the safety scan has findings:")
         for finding in findings:
-            relative = finding.path.relative_to(ROOT)
-            location = f"{relative}:{finding.line}" if finding.line else str(relative)
-            print(f"- {location} [{finding.kind}] {finding.snippet}")
+            print(f"- {format_finding(ROOT, finding)}")
         return 1
 
     DIST.mkdir(exist_ok=True)

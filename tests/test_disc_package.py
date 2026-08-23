@@ -55,6 +55,17 @@ class DiscPackageTests(unittest.TestCase):
                 ):
                     list(iter_files(root))
 
+    def test_disc_inputs_reject_control_character_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.init_repo(root)
+            unsafe_file = root / "public.txt\nforged-manifest-row"
+            unsafe_file.write_text("Public handoff instructions\n")
+            subprocess.run(["git", "add", unsafe_file.name], cwd=root, check=True)
+
+            with self.assertRaisesRegex(RuntimeError, "control characters"):
+                list(iter_files(root))
+
 
 if __name__ == "__main__":
     unittest.main()

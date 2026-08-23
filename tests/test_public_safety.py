@@ -1,9 +1,12 @@
+from contextlib import redirect_stdout
+from io import StringIO
 import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from tools.scan_public_safety import is_luhn_valid, scan
+from tools.scan_public_safety import is_luhn_valid, main, scan
 
 
 class PublicSafetyScanTests(unittest.TestCase):
@@ -81,6 +84,42 @@ class PublicSafetyScanTests(unittest.TestCase):
             findings = scan(root)
 
         self.assertEqual([finding.kind for finding in findings], ["unreviewed non-text file"])
+
+    def test_scan_reports_match_metadata_without_sensitive_content(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            synthetic_value = "synthetic-sensitive-value-1234"
+            key_name = "api" + "_key"
+            (root / "settings.py").write_text(
+                f'{key_name} = "{synthetic_value}"\n', encoding="utf-8"
+            )
+            output = StringIO()
+
+            with patch("sys.argv", ["scan_public_safety.py", str(root)]):
+                with redirect_stdout(output):
+                    result = main()
+
+        rendered = output.getvalue()
+        self.assertEqual(result, 1)
+        self.assertIn("settings.py", rendered)
+        self.assertIn("generic api key assignment", rendered)
+        self.assertNotIn(synthetic_value, rendered)
+
+    def test_scan_flags_and_escapes_control_character_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "public.txt\nforged-row").write_text("Public handoff instructions\n")
+            output = StringIO()
+
+            findings = scan(root)
+            with patch("sys.argv", ["scan_public_safety.py", str(root)]):
+                with redirect_stdout(output):
+                    result = main()
+
+        self.assertIn("control character in path", [finding.kind for finding in findings])
+        self.assertEqual(result, 1)
+        self.assertIn(r"public.txt\nforged-row", output.getvalue())
+        self.assertNotIn("public.txt\nforged-row", output.getvalue())
 
 
 if __name__ == "__main__":
