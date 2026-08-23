@@ -12,7 +12,7 @@ If private reporting is unavailable, open a public issue that asks for a private
 
 - Real private records belong outside this repository.
 - The public scanner must fail closed on sensitive filenames, symbolic links, unapproved binary files, and recognized secret or personal-data patterns.
-- The disc builder may package only Git-tracked regular files and must stop when the public-safety scan has findings.
+- The disc builder may package only Git-tracked regular files outside scanner-skipped generated or dependency directories, and must stop when the public-safety scan has findings or a tracked path would bypass scanner coverage.
 - The generated CD label at `print/PJmaster-CD-label.pdf` is the only approved binary artifact in the repository.
 - CI and local `make qa` runs must not upload the generated disc package or expose its contents in logs.
 

@@ -11,9 +11,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from tools.scan_public_safety import scan
+    from tools.scan_public_safety import SKIP_DIRS, scan
 except ModuleNotFoundError:  # Direct execution from tools/.
-    from scan_public_safety import scan
+    from scan_public_safety import SKIP_DIRS, scan
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +37,10 @@ def iter_files(root: Path = ROOT):
         relative = Path(os.fsdecode(raw_path))
         if relative.is_absolute() or ".." in relative.parts:
             raise RuntimeError(f"Unsafe tracked path: {relative}")
+        if any(part in SKIP_DIRS for part in relative.parts[:-1]):
+            raise RuntimeError(
+                f"Refusing tracked file in scanner-skipped directory: {relative}"
+            )
 
         path = root / relative
         if path.is_symlink():

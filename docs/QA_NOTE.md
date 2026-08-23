@@ -23,8 +23,8 @@ Expected result:
 - Unit tests pass.
 - Public safety scan reports no recognized private-data patterns, sensitive filenames,
   symbolic links, or unapproved binary files.
-- Disc zip, manifest, and printable CD label are generated from Git-tracked regular
-  files only.
+- Disc zip, manifest, and printable CD label are generated only from Git-tracked
+  regular files outside scanner-skipped generated or dependency directories.
 
 ## Gaps
 

@@ -35,6 +35,26 @@ class DiscPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "symbolic link"):
                 list(iter_files(root))
 
+    def test_disc_inputs_reject_tracked_files_in_scanner_skipped_directories(self):
+        for directory in ("dist", "node_modules"):
+            with self.subTest(directory=directory), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self.init_repo(root)
+                skipped_dir = root / directory
+                skipped_dir.mkdir()
+                skipped_file = skipped_dir / "private.txt"
+                skipped_file.write_text("Synthetic private handoff\n")
+                subprocess.run(
+                    ["git", "add", "--force", skipped_file.relative_to(root)],
+                    cwd=root,
+                    check=True,
+                )
+
+                with self.assertRaisesRegex(
+                    RuntimeError, "scanner-skipped directory"
+                ):
+                    list(iter_files(root))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,8 +26,10 @@ python3 -m pip install -r requirements.txt
 
 `make qa` scans the working tree for recognized private-data patterns, sensitive
 filenames, symbolic links, and unapproved binary files before building anything. The
-disc builder then packages only Git-tracked regular files. The generated
-`print/PJmaster-CD-label.pdf` is the repository's only approved binary artifact.
+disc builder then packages only Git-tracked regular files outside the scanner's
+generated and dependency-directory exclusions. A tracked file under an excluded
+directory stops the build. The generated `print/PJmaster-CD-label.pdf` is the
+repository's only approved binary artifact.
 
 Report a suspected vulnerability or accidental private-data exposure through
 [GitHub private vulnerability reporting](https://github.com/ChristFollower873461/PJmaster/security/advisories/new),
