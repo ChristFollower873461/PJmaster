@@ -37,6 +37,10 @@ That creates:
 - `dist/PJmaster-disc-manifest.txt`
 - `print/PJmaster-CD-label.pdf`
 
+The builder refuses to run when the public-safety scan has findings and includes only
+Git-tracked regular files. Untracked workspace files and symbolic links are never disc
+inputs.
+
 ## Physical Label
 
 The printable PDF is a simple letter-size sheet with a disc outline. Print at 100 percent

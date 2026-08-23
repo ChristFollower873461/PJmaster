@@ -24,6 +24,19 @@ If PDF generation fails because `reportlab` is missing, install the one dependen
 python3 -m pip install -r requirements.txt
 ```
 
+`make qa` scans the working tree for recognized private-data patterns, sensitive
+filenames, control-character paths, symbolic links, and unapproved binary files before
+building anything. Findings report only safely escaped path, line, and kind metadata;
+they never repeat the matched content. The disc builder then packages only Git-tracked
+regular files outside the scanner's generated and dependency-directory exclusions. A
+tracked file under an excluded directory or with control characters stops the build.
+The generated `print/PJmaster-CD-label.pdf` is the repository's only approved binary
+artifact.
+
+Report a suspected vulnerability or accidental private-data exposure through
+[GitHub private vulnerability reporting](https://github.com/ChristFollower873461/PJmaster/security/advisories/new),
+not a public issue containing the sensitive details.
+
 ## What Belongs Here
 
 - High-level family instructions.

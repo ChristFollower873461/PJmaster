@@ -1,6 +1,17 @@
 .DS_Store
+.env
+.env.*
+.npmrc
+.pypirc
 __pycache__/
 *.pyc
 *.log
+*.key
+*.p12
+*.pem
+*.pfx
 .pytest_cache/
 dist/
+private/
+secrets/
+vault/
