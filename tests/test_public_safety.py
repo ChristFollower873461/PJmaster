@@ -1,4 +1,4 @@
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 import os
 import tempfile
@@ -10,6 +10,50 @@ from tools.scan_public_safety import is_luhn_valid, main, scan
 
 
 class PublicSafetyScanTests(unittest.TestCase):
+    def test_scan_rejects_missing_or_non_directory_roots(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            regular_file = root / "public.txt"
+            regular_file.write_text("Synthetic public instructions\n")
+            for target in (root / "missing", regular_file):
+                with self.subTest(target=target.name):
+                    with self.assertRaises(NotADirectoryError):
+                        scan(target)
+                    stdout, stderr = StringIO(), StringIO()
+                    with patch("sys.argv", ["scan_public_safety.py", str(target)]):
+                        with redirect_stdout(stdout), redirect_stderr(stderr):
+                            result = main()
+                    self.assertEqual(result, 2)
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertIn("NotADirectoryError", stderr.getvalue())
+                    self.assertNotIn(str(target), stderr.getvalue())
+
+    def test_scan_does_not_silently_skip_unreadable_directories(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            synthetic_detail = "synthetic-private-path-only"
+
+            def unreadable_walk(_root, onerror=None):
+                if onerror is not None:
+                    onerror(PermissionError(synthetic_detail))
+                return iter(())
+
+            with patch("tools.scan_public_safety.os.walk", side_effect=unreadable_walk):
+                with self.assertRaises(PermissionError):
+                    scan(root)
+                stdout, stderr = StringIO(), StringIO()
+                with patch("sys.argv", ["scan_public_safety.py", str(root)]):
+                    with redirect_stdout(stdout), redirect_stderr(stderr):
+                        result = main()
+            self.assertEqual(result, 2)
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertIn("PermissionError", stderr.getvalue())
+            self.assertNotIn(synthetic_detail, stderr.getvalue())
+
+    def test_scan_still_accepts_an_empty_readable_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(scan(Path(tmp)), [])
+
     def test_luhn_validates_payment_card_like_numbers(self):
         valid_number = " ".join(["4111", "1111", "1111", "1111"])
         invalid_number = " ".join(["4111", "1111", "1111", "1112"])

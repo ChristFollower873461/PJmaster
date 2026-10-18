@@ -100,7 +100,10 @@ def is_luhn_valid(number: str) -> bool:
 
 
 def repository_paths(root: Path):
-    for current_root, dirs, files in os.walk(root):
+    def raise_walk_error(error: OSError) -> None:
+        raise error
+
+    for current_root, dirs, files in os.walk(root, onerror=raise_walk_error):
         retained_dirs = []
         for name in dirs:
             path = Path(current_root) / name
@@ -170,6 +173,8 @@ def scan_file(path: Path) -> list[Finding]:
 
 def scan(root: Path) -> list[Finding]:
     root = root.resolve()
+    if not root.is_dir():
+        raise NotADirectoryError("Scan root must be an existing directory")
     findings: list[Finding] = []
     for path in repository_paths(root):
         findings.extend(path_findings(root, path))
@@ -184,8 +189,17 @@ def main() -> int:
     parser.add_argument("root", nargs="?", default=".", help="Repo root to scan")
     args = parser.parse_args()
 
-    root = Path(args.root).resolve()
-    findings = scan(root)
+    try:
+        root = Path(args.root).resolve()
+        findings = scan(root)
+    except OSError as error:
+        # Exception messages can contain private paths; report only the error type.
+        print(
+            f"Public safety scan could not complete ({type(error).__name__}). "
+            "Check that the root is a readable directory.",
+            file=sys.stderr,
+        )
+        return 2
 
     if findings:
         print("Public safety scan found potential private data:")
